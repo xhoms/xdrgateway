@@ -59,7 +59,7 @@ Alerts must be sent to the `/in` endpoint in the application using method `POST`
 Example bash session retrieving the payload to be configured in the PAN-OS device.
 
 ```text
-$ curl 127.0.0.1:8081/dump -H "Authorization: hello" 
+$ curl 127.0.0.1:8080/dump -H "Authorization: hello" 
 {
     "src": "$src",
     "sport": $sport,
@@ -81,7 +81,7 @@ The application provides, as well, the `/stats` endpoint.
 
 Example session retrieving the statistics
 ```text
-% curl 127.0.0.1:8081/stats -H "Authorization: hello"
+% curl 127.0.0.1:8080/stats -H "Authorization: hello"
 {
   "ParseErrors": 0,
   "EventsReceived": 0,
