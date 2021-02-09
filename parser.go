@@ -1,0 +1,117 @@
+package xdrgateway
+
+import (
+	"encoding/json"
+	"strings"
+	"time"
+)
+
+type Parser interface {
+	Parse(data []byte) (*Alert, error)
+	DumpPayloadLayout() []byte
+}
+
+const (
+	panosTSLayout = "2006/01/02 15:04:05"
+)
+
+var (
+	defaultLocation    = time.FixedZone("XGW", 0)
+	basicPayloadLayout = []byte(`{
+		"src": "$src",
+		"sport": $sport,
+		"dst": "$dst",
+		"dport": $dport,
+		"time_generated": "$time_generated",
+		"rule": "$rule",
+		"serial": "$serial",
+		"sender_sw_version": "$sender_sw_version",
+		"subtype": "$subtype",
+		"misc": "$misc",
+		"severity": "$severity",
+		"action": "$action"
+	}
+	`)
+)
+
+type basicParserJson struct {
+	Src       string `json:"src"`
+	Sport     int    `json:"sport"`
+	Dst       string `json:"dst"`
+	Dport     int    `json:"dport"`
+	Timestamp string `json:"time_generated"`
+	Rule      string `json:"rule"`
+	Serial    string `json:"serial"`
+	SWVersion string `json:"sender_sw_version"`
+	Subtype   string `json:"subtype"`
+	Misc      string `json:"misc"`
+	Severity  string `json:"severity"`
+	Action    string `json:"action"`
+}
+
+type BasicParser struct {
+	location      *time.Location
+	payloadLayout []byte
+	tsLayout      string
+	event         *basicParserJson
+}
+
+func NewBasicParser(offset int) (b *BasicParser) {
+	b = &BasicParser{
+		location:      time.FixedZone("XGW", offset*60*60),
+		payloadLayout: basicPayloadLayout,
+		tsLayout:      panosTSLayout,
+		event:         &basicParserJson{},
+	}
+	return
+}
+
+func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
+	if err = json.Unmarshal(data, b.event); err == nil {
+		var t time.Time
+		if t, err = time.ParseInLocation(b.tsLayout, b.event.Timestamp, b.location); err == nil {
+			var level Severities
+			switch b.event.Severity {
+			case "critical", "high":
+				level = SeverityHigh
+			case "medium":
+				level = SeverityMedium
+			case "informational":
+				level = SeverityInfo
+			case "low":
+				level = SeverityLow
+			default:
+				level = SeverityUnknown
+			}
+			alert = NewAlert(level, t.UnixNano()/int64(time.Millisecond))
+			if err = alert.NetData(b.event.Src, b.event.Dst, uint16(b.event.Sport), uint16(b.event.Dport)); err == nil {
+				var action Actions
+				switch b.event.Action {
+				case "alert", "allow":
+					action = ActionReported
+				default:
+					action = ActionBlocked
+				}
+				descParts := make([]string, 1, 4)
+				descParts[0] = b.event.Misc
+				if b.event.Serial != "" {
+					descParts = append(descParts, "serial="+b.event.Serial)
+				}
+				if b.event.SWVersion != "" {
+					descParts = append(descParts, "version="+b.event.SWVersion)
+				}
+				if b.event.Action != "" {
+					descParts = append(descParts, "action="+b.event.Action)
+				}
+				description := strings.Join(descParts, ";")
+				name := b.event.Rule + "-" + b.event.Subtype
+				alert.MetaData(name, description, action)
+			}
+		}
+	}
+	return
+}
+
+func (b *BasicParser) DumpPayloadLayout() []byte {
+	return b.payloadLayout
+}
