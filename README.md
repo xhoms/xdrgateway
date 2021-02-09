@@ -8,7 +8,7 @@ Features
 
 ## Build the docker image
 ```bash
-docker build -t xdrgw https://github.com/xhoms/xdrgateway
+docker build -t xdrgw https://github.com/xhoms/xdrgateway.git#main
 ```
 
 ## Running the application
