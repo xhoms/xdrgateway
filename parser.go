@@ -6,8 +6,11 @@ import (
 	"time"
 )
 
+// Parser provides methods to parse PAN-OS alerts into XDR Alerts
 type Parser interface {
+	// Parse attempts to fill a XDR alert with the payload pushed by the PAN-OS device
 	Parse(data []byte) (*Alert, error)
+	// DumpPayloadLayout returns a human-readable helper to assist the PAN-OS administrator preparing the payload for this parser
 	DumpPayloadLayout() []byte
 }
 
@@ -34,7 +37,7 @@ var (
 	`)
 )
 
-type basicParserJson struct {
+type basicParserJSON struct {
 	Src       string `json:"src"`
 	Sport     int    `json:"sport"`
 	Dst       string `json:"dst"`
@@ -49,23 +52,26 @@ type basicParserJson struct {
 	Action    string `json:"action"`
 }
 
+// BasicParser implements xdrgateway.Parser interface
 type BasicParser struct {
 	location      *time.Location
 	payloadLayout []byte
 	tsLayout      string
-	event         *basicParserJson
+	event         *basicParserJSON
 }
 
+// NewBasicParser returns a parser with TimeZone set to `offset`-hours (negative values supported)
 func NewBasicParser(offset int) (b *BasicParser) {
 	b = &BasicParser{
 		location:      time.FixedZone("XGW", offset*60*60),
 		payloadLayout: basicPayloadLayout,
 		tsLayout:      panosTSLayout,
-		event:         &basicParserJson{},
+		event:         &basicParserJSON{},
 	}
 	return
 }
 
+// Parse converts data into a XDR Alert. Return error if parsing fails
 func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
 	if err = json.Unmarshal(data, b.event); err == nil {
 		var t time.Time
@@ -112,6 +118,7 @@ func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
 	return
 }
 
+// DumpPayloadLayout provides human-readable format of the supported PAN-OS payload for this parser
 func (b *BasicParser) DumpPayloadLayout() []byte {
 	return b.payloadLayout
 }

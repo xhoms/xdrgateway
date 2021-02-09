@@ -26,14 +26,22 @@ var (
 	headerContentType = http.CanonicalHeaderKey("Content-Type")
 )
 
+// XDRClientStats provides counters for the XDR API client
 type XDRClientStats struct {
-	POSTSend     uint64
+	// POSTSend amount of successful POST's to the XDR alert ingestion API (status == 200 OK)
+	POSTSend uint64
+	// POSTFailures amount of unsuccessful POST's to the XDR alert ingestion API (status ""= 200 OK)
 	POSTFailures uint64
 }
 
+// XDRClient provides a XDR alert API client implementation for the insert_parsed_alerts endpoint
+// users must call Init() before any other method
 type XDRClient struct {
-	APIKey     string
-	APIKeyID   string
+	// APIKey XDR API Key (only Advanced supported)
+	APIKey string
+	// APIKeyID XDR API Key ID
+	APIKeyID string
+	// FQDN XDR instance to target
 	FQDN       string
 	endpoint   string
 	hashprefix string
@@ -42,9 +50,11 @@ type XDRClient struct {
 	client     *http.Client
 	url        string
 	init       bool
-	Debug      bool
+	// Debug turn on client verbosity
+	Debug bool
 }
 
+// NewXDRClientFromEnv creates a new XDRClient instance reading data from environmental variables
 func NewXDRClientFromEnv() (client *XDRClient) {
 	client = &XDRClient{}
 	if ak, exists := os.LookupEnv("API_KEY"); exists {
@@ -71,6 +81,7 @@ func NewXDRClientFromEnv() (client *XDRClient) {
 	return
 }
 
+// Init checks mandatory properties and initializes the nonce needed for the advanced XDR API key
 func (x *XDRClient) Init() (err error) {
 	switch {
 	case x.APIKey == "":
@@ -139,6 +150,31 @@ func (x *XDRClient) send(payload []byte) (err error) {
 	} else {
 		x.stats.POSTFailures++
 		log.Printf("error - %v", err)
+	}
+	return
+}
+
+// Send sends a single alert
+func (x *XDRClient) Send(alert *Alert) (err error) {
+	var payload []byte
+	jalert := jsonalert{}
+	jalert.copy(alert)
+	if payload, err = newXDRPayload([]jsonalert{jalert}); err == nil {
+		err = x.send(payload)
+	}
+	return
+}
+
+// SendMulti sends multiple alerts in a single update
+// (notice that XDR max update of 60 is not enforced here)
+func (x *XDRClient) SendMulti(alert []*Alert) (err error) {
+	var payload []byte
+	jalert := make([]jsonalert, len(alert))
+	for idx := range alert {
+		jalert[idx].copy(alert[idx])
+	}
+	if payload, err = newXDRPayload(jalert); err == nil {
+		err = x.send(payload)
 	}
 	return
 }

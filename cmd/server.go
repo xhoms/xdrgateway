@@ -25,7 +25,7 @@ func main() {
 		debug = true
 	}
 	client := xdrgateway.NewXDRClientFromEnv()
-	pipeOps := xdrgateway.NewOpsFromEnv()
+	pipeOps := xdrgateway.NewPipeOpsFromEnv()
 	parser := xdrgateway.NewBasicParser(offset)
 	api := xdrgateway.NewAPI(parser, client, os.Getenv("PSK"), debug, pipeOps)
 	http.HandleFunc("/stats", api.Stats)
