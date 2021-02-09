@@ -2,7 +2,7 @@ FROM golang:latest
 RUN mkdir /app
 COPY . /app/
 WORKDIR /app
-RUN CGO_ENABLED=0 go build -a -o server ./cmd/server.go
+RUN CGO_ENABLED=0 go build -o -a server /cmd/server.go
 
 FROM scratch
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
