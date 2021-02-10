@@ -51,6 +51,8 @@ func actionString(code Actions) (action string) {
 }
 
 type Alert struct {
+	Product          string
+	Vendor           string
 	LocalIP          string
 	LocalPort        uint16
 	RemoteIP         string

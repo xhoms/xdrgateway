@@ -54,10 +54,11 @@ type basicParserJSON struct {
 
 // BasicParser implements xdrgateway.Parser interface
 type BasicParser struct {
-	location      *time.Location
-	payloadLayout []byte
-	tsLayout      string
-	event         *basicParserJSON
+	location        *time.Location
+	payloadLayout   []byte
+	tsLayout        string
+	event           *basicParserJSON
+	product, vendor string
 }
 
 // NewBasicParser returns a parser with TimeZone set to `offset`-hours (negative values supported)
@@ -67,6 +68,8 @@ func NewBasicParser(offset int) (b *BasicParser) {
 		payloadLayout: basicPayloadLayout,
 		tsLayout:      panosTSLayout,
 		event:         &basicParserJSON{},
+		product:       "PAN-OS",
+		vendor:        "Palo Alto Networks",
 	}
 	return
 }
@@ -90,6 +93,7 @@ func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
 				level = SeverityUnknown
 			}
 			alert = NewAlert(level, t.UnixNano()/int64(time.Millisecond))
+			alert.Product, alert.Vendor = b.product, b.vendor
 			if err = alert.NetData(b.event.Src, b.event.Dst, uint16(b.event.Sport), uint16(b.event.Dport)); err == nil {
 				var action Actions
 				switch b.event.Action {

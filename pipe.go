@@ -14,8 +14,6 @@ const (
 	t1BucketSize     = 600
 	t1BucketDuration = 60
 	t2Timeout        = 2
-	product          = "PAN-OS"
-	vendor           = "Palo Alto Networks"
 )
 
 type jsonalert struct {
@@ -33,8 +31,8 @@ type jsonalert struct {
 }
 
 func (a *jsonalert) copy(alert *Alert) {
-	a.Product = product
-	a.Vendor = vendor
+	a.Product = alert.Product
+	a.Vendor = alert.Vendor
 	a.LocalIP = alert.LocalIP
 	a.LocalPort = alert.LocalPort
 	a.RemoteIP = alert.RemoteIP
