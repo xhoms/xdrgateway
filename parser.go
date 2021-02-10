@@ -21,19 +21,19 @@ const (
 var (
 	defaultLocation    = time.FixedZone("XGW", 0)
 	basicPayloadLayout = []byte(`{
-		"src": "$src",
-		"sport": $sport,
-		"dst": "$dst",
-		"dport": $dport,
-		"time_generated": "$time_generated",
-		"rule": "$rule",
-		"serial": "$serial",
-		"sender_sw_version": "$sender_sw_version",
-		"subtype": "$subtype",
-		"misc": "$misc",
-		"severity": "$severity",
-		"action": "$action"
-	}
+	"src": "$src",
+	"sport": $sport,
+	"dst": "$dst",
+	"dport": $dport,
+	"time_generated": "$time_generated",
+	"rule": "$rule",
+	"serial": "$serial",
+	"sender_sw_version": "$sender_sw_version",
+	"subtype": "$subtype",
+	"misc": "$misc",
+	"severity": "$severity",
+	"action": "$action"
+}
 	`)
 )
 

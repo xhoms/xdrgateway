@@ -55,6 +55,14 @@ type XDRClient struct {
 }
 
 // NewXDRClientFromEnv creates a new XDRClient instance reading data from environmental variables
+//
+// Required variables:
+//
+// - API_KEY Key generated in the corresponding Cortex XDR instance (only Advanced supported)
+//
+// - API_KEY_ID identifier (sequence number) of the API_KEY
+//
+// - FQDN Full Qualified Domain Name of the corresponding XDR Instance (i.e. myxdr.xdr.us.paloaltonetworks.com)
 func NewXDRClientFromEnv() (client *XDRClient) {
 	client = &XDRClient{}
 	if ak, exists := os.LookupEnv("API_KEY"); exists {

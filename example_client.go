@@ -6,6 +6,7 @@ import (
 )
 
 // ExampleClient shows how to create an XDRCllient from environmentala variables to send an alert.
+//
 // Notice NewXDRClientFromEnv() will throw a fatal error if the mandatory variables are not found
 func ExampleClient() {
 	client := NewXDRClientFromEnv()
@@ -26,6 +27,7 @@ func ExampleClient() {
 }
 
 // ExampleClientExplicit creates a XDRClient explicitly and pushed multiple alerts in a single update
+//
 // Notice the client do not enforce the maximum number of alerts in a single update at it might be
 // rejected at the XDR side as it do not accept more than 60 alerts in a single update
 func ExampleClientExplicit() {

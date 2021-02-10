@@ -5,7 +5,10 @@ import (
 	"net"
 )
 
+// Severities is an enumeration of all supported Cortex XDR alert severities
 type Severities int
+
+// Actions is an enumeration of all supported Cortex XDR alert actions
 type Actions int
 
 const (
@@ -50,18 +53,35 @@ func actionString(code Actions) (action string) {
 	return
 }
 
+// Alert is a representation of Cortex XDR alert fields.
+// Fields are exposed for convenience but developers are encourages to use the provided methods to fill them in order
+// to perform format validation (to avoid upstream rejects by the API)
 type Alert struct {
-	Product          string
-	Vendor           string
-	LocalIP          string
-	LocalPort        uint16
-	RemoteIP         string
-	RemotePort       uint16
-	Timestamp        int64
-	Severity         Severities
-	AlertName        string
+	// Product is a value that defines the product
+	Product string
+	// Vendor is a value that defines the product
+	Vendor string
+	// LocalIP is the value for the source IP address.
+	// It is highly recommended to use the method NetData(srcIP string, dstIP string, srcPort uint16, dstPort uint16) (err error)
+	// to field this field as well as the rest of network-related alert properties. The method will enforce IPv4/IPv6 address
+	// format validity
+	LocalIP string
+	// LocalPort is the value for the source port
+	LocalPort uint16
+	// RemoteIP is the value of the destination IP address
+	RemoteIP string
+	// RemotePort is the value for the destination port
+	RemotePort uint16
+	// Timestamp is the value representing the epoch of the time the alert occurred in milliseconds
+	Timestamp int64
+	// Severity is the value of alert severity. Use the corresponding code from the Severities enum
+	Severity Severities
+	// AlertName defines the alert name
+	AlertName string
+	// AlertDescription defines the alert description
 	AlertDescription string
-	Action           Actions
+	// Action defines the alert action taken by the source. Use the corresponding code from the Actions enum
+	Action Actions
 }
 
 // NewAlert allocates memory for a new Alert struct
@@ -78,7 +98,7 @@ func NewHighAlert(timestamp int64) (alert *Alert) {
 	return NewAlert(SeverityHigh, timestamp)
 }
 
-// NewHighAlert allocates memory for a new Alert struct with severity Low
+// NewLowAlert allocates memory for a new Alert struct with severity Low
 func NewLowAlert(timestamp int64) (alert *Alert) {
 	return NewAlert(SeverityLow, timestamp)
 }
@@ -107,7 +127,7 @@ func (a *Alert) NetData(srcIP, dstIP string, srcPort, dstPort uint16) (err error
 	return
 }
 
-// NetData is used to populate the Meta Data in the struct
+// MetaData is used to populate the Meta Data in the struct
 func (a *Alert) MetaData(name, description string, action Actions) {
 	a.AlertName = name
 	a.AlertDescription = description

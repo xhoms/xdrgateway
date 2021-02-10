@@ -28,7 +28,7 @@ The following are optional variables
 * `QUOTA_SECONDS` - XDR ingestion alert quota refresh period (defaults to `60` seconds)
 * `UPDATE_SIZE` - XDR ingestion alert max number of alerts per update (defaults to `60`)
 * `BUFFER_SIZE` - size of the pipe buffer (defaults to `6000` = 10 minutes)
-* `T1` - how often the pipe buffer is drained (defaulst to `2` seconds)
+* `T1` - how often the pipe buffer polled for new alerts (defaulst to `2` seconds)
 
 Example shell session running the application
 
