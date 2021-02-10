@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,9 +25,15 @@ func main() {
 	if _, exists := os.LookupEnv("DEBUG"); exists {
 		debug = true
 	}
+	parser := xdrgateway.NewBasicParser(offset)
+	fmt.Println("PAN-OS to Cortex XDR alert ingestion Gateway")
+	fmt.Println("--------------------------------------------")
+	fmt.Println("  - Send PAN_OS alerts to /in using HTTP POST")
+	fmt.Println("  - The endpoint /stats provides runtime statistics")
+	fmt.Println("  - Use the following payload in the HTTP Log Forwarding feature")
+	fmt.Println(string(parser.DumpPayloadLayout()))
 	client := xdrgateway.NewXDRClientFromEnv()
 	pipeOps := xdrgateway.NewPipeOpsFromEnv()
-	parser := xdrgateway.NewBasicParser(offset)
 	api := xdrgateway.NewAPI(parser, client, os.Getenv("PSK"), debug, pipeOps)
 	http.HandleFunc("/stats", api.Stats)
 	http.HandleFunc("/dump", api.Dump)

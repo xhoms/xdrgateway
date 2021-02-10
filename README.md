@@ -39,6 +39,26 @@ $ docker run --rm -p 8080:8080 \
 -e FQDN="myxdr.xdr.us.paloaltonetworks.com" \
 -e PSK="hello" \
 xdrgw
+PAN-OS to Cortex XDR alert ingestion Gateway
+--------------------------------------------
+  - Send PAN_OS alerts to /in using HTTP POST
+  - The endpoint /stats provides runtime statistics
+  - Use the following payload in the HTTP Log Forwarding feature
+{
+        "src": "$src",
+        "sport": $sport,
+        "dst": "$dst",
+        "dport": $dport,
+        "time_generated": "$time_generated",
+        "rule": "$rule",
+        "serial": "$serial",
+        "sender_sw_version": "$sender_sw_version",
+        "subtype": "$subtype",
+        "misc": "$misc",
+        "severity": "$severity",
+        "action": "$action"
+}
+
 2021/02/09 11:51:32 nonce set to EEH4PO4BQY42YSFEY2X2F4KYDKFZKJPCB7NGRET7FMX7QNXXGV4NWD5FJQU7P7MS
 2021/02/09 11:51:32 ednpoint set to https://api-myxdr.xdr.us.paloaltonetworks.com/public_api/v1/alerts/insert_parsed_alerts/
 2021/02/09 11:51:32 starting http service on port 8080
