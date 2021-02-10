@@ -28,7 +28,7 @@ Another way to create the client is by initializing the struct and calling its I
 The client exposes the Send(alert *xdrgateway.Alert) (err error) and SendMulti(alert *xdrgateway.Alert) (err error) methods
 to push alerts into XDR.
 
-API for buffered (rate limited) alert ingestion
+MicroService for buffered (rate limited) alert ingestion
 
 The second main component is the API type that provides methods to implement a HTTP API to ingest third party alerts into XDR.
 Not only provides HTTP handlers for receiving alerts sent using POST but also implements a synchonous ingestion pipeline that
