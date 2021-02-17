@@ -30,12 +30,13 @@ var (
 	"serial": "$serial",
 	"sender_sw_version": "$sender_sw_version",
 	"subtype": "$subtype",
-	"misc": $misc,
 	"threat_name": "$threat_name",
 	"severity": "$severity",
 	"action": "$action"
 }
-	`)
+---annex---
+$misc
+`)
 )
 
 type basicParserJSON struct {
@@ -78,7 +79,11 @@ func NewBasicParser(offset int) (b *BasicParser) {
 
 // Parse converts data into a XDR Alert. Return error if parsing fails
 func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
-	if err = json.Unmarshal(data, b.event); err == nil {
+	parts := strings.Split(string(data), "---annex---")
+	if err = json.Unmarshal([]byte(parts[0]), b.event); err == nil {
+		if len(parts) > 0 {
+			b.event.Misc = strings.Trim(parts[1], "\n\"")
+		}
 		var t time.Time
 		if t, err = time.ParseInLocation(b.tsLayout, b.event.Timestamp, b.location); err == nil {
 			var level Severities
