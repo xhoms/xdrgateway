@@ -30,7 +30,8 @@ var (
 	"serial": "$serial",
 	"sender_sw_version": "$sender_sw_version",
 	"subtype": "$subtype",
-	"misc": "$misc",
+	"misc": $misc,
+	"threat_name": "$threat_name",
 	"severity": "$severity",
 	"action": "$action"
 }
@@ -38,18 +39,19 @@ var (
 )
 
 type basicParserJSON struct {
-	Src       string `json:"src"`
-	Sport     int    `json:"sport"`
-	Dst       string `json:"dst"`
-	Dport     int    `json:"dport"`
-	Timestamp string `json:"time_generated"`
-	Rule      string `json:"rule"`
-	Serial    string `json:"serial"`
-	SWVersion string `json:"sender_sw_version"`
-	Subtype   string `json:"subtype"`
-	Misc      string `json:"misc"`
-	Severity  string `json:"severity"`
-	Action    string `json:"action"`
+	Src        string `json:"src"`
+	Sport      int    `json:"sport"`
+	Dst        string `json:"dst"`
+	Dport      int    `json:"dport"`
+	Timestamp  string `json:"time_generated"`
+	Rule       string `json:"rule"`
+	Serial     string `json:"serial"`
+	SWVersion  string `json:"sender_sw_version"`
+	Subtype    string `json:"subtype"`
+	Misc       string `json:"misc"`
+	ThreatName string `json:"threat_name"`
+	Severity   string `json:"severity"`
+	Action     string `json:"action"`
 }
 
 // BasicParser implements xdrgateway.Parser interface
@@ -113,8 +115,14 @@ func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
 				if b.event.Action != "" {
 					descParts = append(descParts, "action="+b.event.Action)
 				}
+				if b.event.Rule != "" {
+					descParts = append(descParts, "rule="+b.event.Rule)
+				}
+				if b.event.Subtype != "" {
+					descParts = append(descParts, "type="+b.event.Subtype)
+				}
 				description := strings.Join(descParts, ";")
-				name := b.event.Rule + "-" + b.event.Subtype
+				name := b.event.ThreatName
 				alert.MetaData(name, description, action)
 			}
 		}
