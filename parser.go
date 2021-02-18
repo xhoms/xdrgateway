@@ -2,6 +2,7 @@ package xdrgateway
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 )
@@ -62,10 +63,11 @@ type BasicParser struct {
 	tsLayout        string
 	event           *basicParserJSON
 	product, vendor string
+	debug           bool
 }
 
 // NewBasicParser returns a parser with TimeZone set to `offset`-hours (negative values supported)
-func NewBasicParser(offset int) (b *BasicParser) {
+func NewBasicParser(offset int, debug bool) (b *BasicParser) {
 	b = &BasicParser{
 		location:      time.FixedZone("XGW", offset*60*60),
 		payloadLayout: basicPayloadLayout,
@@ -73,12 +75,22 @@ func NewBasicParser(offset int) (b *BasicParser) {
 		event:         &basicParserJSON{},
 		product:       "PAN-OS",
 		vendor:        "Palo Alto Networks",
+		debug:         debug,
 	}
 	return
 }
 
 // Parse converts data into a XDR Alert. Return error if parsing fails
 func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
+	if b.debug {
+		var glimpse string
+		if len(data) > 100 {
+			glimpse = string(data[:100]) + "..."
+		} else {
+			glimpse = string(data)
+		}
+		log.Println("basicParser - rx:", glimpse)
+	}
 	parts := strings.Split(string(data), "---annex---")
 	if err = json.Unmarshal([]byte(parts[0]), b.event); err == nil {
 		if len(parts) > 0 {

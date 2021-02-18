@@ -52,27 +52,26 @@ func (a *API) Ingestion(w http.ResponseWriter, r *http.Request) {
 	if _, err := buff.ReadFrom(r.Body); err == nil {
 		if err = r.Body.Close(); err == nil {
 			a.stats.EventsReceived++
-			src := r.RemoteAddr
 			auth := r.Header.Get("Authorization")
 			if auth == a.psk {
 				if r.Method == http.MethodPost {
 					var alert *Alert
 					if alert, err = a.parser.Parse(buff.Bytes()); err == nil {
 						if a.debug {
-							log.Printf("api - sucessfully parsed alert from %v", src)
+							log.Println("api - sucessfully parsed alert")
 						}
 						a.pipe.Send(alert)
 					} else {
 						a.stats.ParseErrors++
-						log.Println("api error - unparseable payload from", src)
+						log.Println("api error - unparseable payload")
 					}
 				} else {
 					a.stats.ParseErrors++
-					log.Println("api error - non POST request from", src)
+					log.Println("api error - non POST request")
 				}
 			} else {
 				a.stats.PSKErrors++
-				log.Println("api error - invalid PSK from", src)
+				log.Println("api error - invalid PSK")
 			}
 		} else {
 			log.Println("api error -", err)

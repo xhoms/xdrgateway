@@ -75,7 +75,7 @@ func ExampleXDRClient_explicit() {
 func ExampleAPI() {
 	port := "8080"
 	client := NewXDRClientFromEnv()
-	parser := NewBasicParser(0)
+	parser := NewBasicParser(0, false)
 	api := NewAPI(parser, client, "", false, nil)
 	http.HandleFunc("/in", api.Ingestion)
 	log.Println("payload template to be used in the PAN-OS device")

@@ -10,6 +10,10 @@ import (
 	"github.com/xhoms/xdrgateway"
 )
 
+var (
+	build string
+)
+
 func main() {
 	port := "8080"
 	if envport, exists := os.LookupEnv("PORT"); exists {
@@ -25,9 +29,10 @@ func main() {
 	if _, exists := os.LookupEnv("DEBUG"); exists {
 		debug = true
 	}
-	parser := xdrgateway.NewBasicParser(offset)
+	parser := xdrgateway.NewBasicParser(offset, debug)
 	fmt.Println("PAN-OS to Cortex XDR alert ingestion Gateway")
 	fmt.Println("--------------------------------------------")
+	fmt.Println("version:", xdrgateway.Version, build)
 	fmt.Println("  - Send PAN_OS alerts to /in using HTTP POST")
 	fmt.Println("  - The endpoint /stats provides runtime statistics")
 	fmt.Println("  - Use the following payload in the HTTP Log Forwarding feature")
