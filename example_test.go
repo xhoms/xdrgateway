@@ -7,10 +7,9 @@ import (
 	"time"
 )
 
-// ExampleXDRClient_fromenv shows how to create an XDRCllient from environmentala variables to send an alert.
-//
+// Example that creates an XDRCllient from environmentala variables to send an alert.
 // Notice NewXDRClientFromEnv() will throw a fatal error if the mandatory variables are not found
-func ExampleXDRClient_fromenv() {
+func ExampleNewXDRClientFromEnv() {
 	client := NewXDRClientFromEnv()
 	alert := &Alert{
 		LocalIP:          "15.14.13.12",
@@ -28,11 +27,10 @@ func ExampleXDRClient_fromenv() {
 	}
 }
 
-// ExampleXDRClient_explicit creates a XDRClient explicitly and pushed multiple alerts in a single update
-//
+// Example that creates a XDRClient explicitly and pushes multiple alerts in a single update.
 // Notice the client do not enforce the maximum number of alerts in a single update at it might be
 // rejected at the XDR side as it do not accept more than 60 alerts in a single update
-func ExampleXDRClient_explicit() {
+func ExampleXDRClient() {
 	client := XDRClient{
 		APIKey:   "O4Bw...wEX",
 		APIKeyID: "37",
@@ -70,7 +68,7 @@ func ExampleXDRClient_explicit() {
 	}
 }
 
-// ExampleAPI implements a HTTP server that can be used to ingest PAN-OS alerts into Cortex XDR
+// Example that creates a HTTP server that can be used to ingest PAN-OS alerts into Cortex XDR
 // leveraging the NGFW's HTTP Log Forwarding feature
 func ExampleAPI() {
 	port := "8080"
