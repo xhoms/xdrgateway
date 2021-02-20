@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/xhoms/xdrgateway/xdrclient"
 )
 
 // AppStats hold runtime statistics for the application
 type AppStats struct {
 	APIStats
-	XDRClientStats
-	AlertPipeStats
+	xdrclient.Stats
+	PipeStats
 }
 
 // APIStats provides counters for the PAN-OS facing API part
@@ -34,7 +36,7 @@ type API struct {
 }
 
 // NewAPI creates and initializes a xdrgateway instance from values
-func NewAPI(parser Parser, xdrClient *XDRClient, psk string, debug bool, pipe *AlertPipeOps) (api *API) {
+func NewAPI(parser Parser, xdrClient *xdrclient.Client, psk string, debug bool, pipe *AlertPipeOps) (api *API) {
 	api = &API{
 		parser: parser,
 		pipe:   newAlertPipe(xdrClient, pipe),
@@ -45,32 +47,52 @@ func NewAPI(parser Parser, xdrClient *XDRClient, psk string, debug bool, pipe *A
 	return
 }
 
-// Ingestion http.HandleFunc compatible handler for PAN-OS alert ingestion
+func (a *API) httpAuth(h http.Header) bool {
+	auth := h.Get("Authorization")
+	if auth == a.psk {
+		return true
+	}
+	a.stats.PSKErrors++
+	return false
+}
+
+// Close attempts to gracefully shutdown the pipeline goroutines
+func (a *API) Close() {
+	a.pipe.stats = a.pipe.close()
+}
+
+// Ingest attempts to parse the provide payload and, if successful, ingests the resulting alert into the pipe
+func (a *API) Ingest(payload []byte) (err error) {
+	var alert *xdrclient.Alert
+	if alert, err = a.parser.Parse(payload); err == nil {
+		a.pipe.ingest(alert)
+		a.stats.EventsReceived++
+	} else {
+		a.stats.ParseErrors++
+	}
+	return
+}
+
+// HandlerIngestion http.HandleFunc compatible handler for PAN-OS alert ingestion
 // only POST method supported
-func (a *API) Ingestion(w http.ResponseWriter, r *http.Request) {
+func (a *API) HandlerIngestion(w http.ResponseWriter, r *http.Request) {
 	buff := new(bytes.Buffer)
 	if _, err := buff.ReadFrom(r.Body); err == nil {
 		if err = r.Body.Close(); err == nil {
 			a.stats.EventsReceived++
-			auth := r.Header.Get("Authorization")
-			if auth == a.psk {
+			if a.httpAuth(r.Header) {
 				if r.Method == http.MethodPost {
-					var alert *Alert
-					if alert, err = a.parser.Parse(buff.Bytes()); err == nil {
+					if err = a.Ingest(buff.Bytes()); err == nil {
 						if a.debug {
 							log.Println("api - sucessfully parsed alert")
 						}
-						a.pipe.Send(alert)
 					} else {
-						a.stats.ParseErrors++
 						log.Println("api error - unparseable payload")
 					}
 				} else {
-					a.stats.ParseErrors++
 					log.Println("api error - non POST request")
 				}
 			} else {
-				a.stats.PSKErrors++
 				log.Println("api error - invalid PSK")
 			}
 		} else {
@@ -83,34 +105,32 @@ func (a *API) Ingestion(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// Dump http.HandleFunc compatible handler that dumps the parser layout hint
-func (a *API) Dump(w http.ResponseWriter, r *http.Request) {
+// HandlerHint http.HandleFunc compatible handler that dumps the parser layout hint
+func (a *API) HandlerHint(w http.ResponseWriter, r *http.Request) {
 	buff := new(bytes.Buffer)
 	if _, err := buff.ReadFrom(r.Body); err == nil {
 		r.Body.Close()
 	}
-	auth := r.Header.Get("Authorization")
 	var response []byte
-	if auth == a.psk {
+	if a.httpAuth(r.Header) {
 		response = a.parser.DumpPayloadLayout()
 	}
 	w.Write(response)
 	return
 }
 
-// Stats http.HandleFunc compatible handler that dumps runtime statistics
-func (a *API) Stats(w http.ResponseWriter, r *http.Request) {
+// HandlerStats http.HandleFunc compatible handler that dumps runtime statistics
+func (a *API) HandlerStats(w http.ResponseWriter, r *http.Request) {
 	buff := new(bytes.Buffer)
 	if _, err := buff.ReadFrom(r.Body); err == nil {
 		r.Body.Close()
 	}
-	auth := r.Header.Get("Authorization")
 	var response []byte
-	if auth == a.psk {
+	if a.httpAuth(r.Header) {
 		stats := &AppStats{
-			APIStats:       *a.stats,
-			XDRClientStats: *a.pipe.xdrAPI.stats,
-			AlertPipeStats: *a.pipe.stats,
+			APIStats:  *a.stats,
+			Stats:     *a.pipe.client.Stats,
+			PipeStats: *a.pipe.stats,
 		}
 		if jdata, err := json.MarshalIndent(stats, "", "  "); err == nil {
 			response = jdata

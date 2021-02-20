@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/xhoms/xdrgateway"
+	"github.com/xhoms/xdrgateway/xdrclient"
 )
 
 var (
@@ -37,12 +38,12 @@ func main() {
 	fmt.Println("  - The endpoint /stats provides runtime statistics")
 	fmt.Println("  - Use the following payload in the HTTP Log Forwarding feature")
 	fmt.Println(string(parser.DumpPayloadLayout()))
-	client := xdrgateway.NewXDRClientFromEnv()
+	client := xdrclient.NewClientFromEnv()
 	pipeOps := xdrgateway.NewPipeOpsFromEnv()
 	api := xdrgateway.NewAPI(parser, client, os.Getenv("PSK"), debug, pipeOps)
-	http.HandleFunc("/stats", api.Stats)
-	http.HandleFunc("/dump", api.Dump)
-	http.HandleFunc("/in", api.Ingestion)
+	http.HandleFunc("/stats", api.HandlerStats)
+	http.HandleFunc("/dump", api.HandlerHint)
+	http.HandleFunc("/in", api.HandlerIngestion)
 	log.Println("starting http service on port", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

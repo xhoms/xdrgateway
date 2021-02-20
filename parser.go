@@ -5,12 +5,14 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/xhoms/xdrgateway/xdrclient"
 )
 
 // Parser provides methods to parse PAN-OS alerts into XDR Alerts
 type Parser interface {
 	// Parse attempts to fill a XDR alert with the payload pushed by the PAN-OS device
-	Parse(data []byte) (*Alert, error)
+	Parse(data []byte) (*xdrclient.Alert, error)
 	// DumpPayloadLayout returns a human-readable helper to assist the PAN-OS administrator preparing the payload for this parser
 	DumpPayloadLayout() []byte
 }
@@ -81,7 +83,7 @@ func NewBasicParser(offset int, debug bool) (b *BasicParser) {
 }
 
 // Parse converts data into a XDR Alert. Return error if parsing fails
-func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
+func (b *BasicParser) Parse(data []byte) (alert *xdrclient.Alert, err error) {
 	if b.debug {
 		var glimpse string
 		if len(data) > 100 {
@@ -98,28 +100,28 @@ func (b *BasicParser) Parse(data []byte) (alert *Alert, err error) {
 		}
 		var t time.Time
 		if t, err = time.ParseInLocation(b.tsLayout, b.event.Timestamp, b.location); err == nil {
-			var level Severities
+			var level xdrclient.Severities
 			switch b.event.Severity {
 			case "critical", "high":
-				level = SeverityHigh
+				level = xdrclient.SeverityHigh
 			case "medium":
-				level = SeverityMedium
+				level = xdrclient.SeverityMedium
 			case "informational":
-				level = SeverityInfo
+				level = xdrclient.SeverityInfo
 			case "low":
-				level = SeverityLow
+				level = xdrclient.SeverityLow
 			default:
-				level = SeverityUnknown
+				level = xdrclient.SeverityUnknown
 			}
-			alert = NewAlert(level, t.UnixNano()/int64(time.Millisecond))
+			alert = xdrclient.NewAlert(level, t.UnixNano()/int64(time.Millisecond))
 			alert.Product, alert.Vendor = b.product, b.vendor
 			if err = alert.NetData(b.event.Src, b.event.Dst, uint16(b.event.Sport), uint16(b.event.Dport)); err == nil {
-				var action Actions
+				var action xdrclient.Actions
 				switch b.event.Action {
 				case "alert", "allow":
-					action = ActionReported
+					action = xdrclient.ActionReported
 				default:
-					action = ActionBlocked
+					action = xdrclient.ActionBlocked
 				}
 				descParts := make([]string, 1, 4)
 				descParts[0] = b.event.Misc

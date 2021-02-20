@@ -1,3 +1,4 @@
 package xdrgateway
 
-const Version = "v0.1.4"
+// Version of the package
+const Version = "v0.1.5"

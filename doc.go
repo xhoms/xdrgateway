@@ -1,36 +1,7 @@
 /*
 Package xdrgateway provides the tools needed to create an alert pipeline ingestion into Palo Alto Network Cortex XDR
 
-The XDRClient for sync alert ingestion
-
-The main component is the XDRClient type that implements a client to the Cortex XDR insert parsed alerts API.
-A convenience method is provided to configure and initialize a client from environmental variables.
-
-	client := xdrgateway.NewXDRClientFromEnv()
-
-NewXDRClientFromEnv will throw fatal errors if the mandatory environmental variables are not found. They are:
-
-	API_KEY     XDR API Key (Advanced)
-	API_KEY_ID  The XDR API Key identifier (its sequence number)
-	FQDN        Full Qualified Domain Name of the corresponding XDR Instance (i.e. myxdr.xdr.us.paloaltonetworks.com)
-
-Another way to create the client is by initializing the struct and calling its Init() method
-
-	client := xdrgateway.XDRClient{
-		APIKey: "<my API KEY>",
-		APIKeyID: "37",
-		FQDN: "myxdr.xdr.us.paloaltonetworks.com",
-	}
-	if err := client.Init(); err != nil {
-		log.Fatal(err)
-	}
-
-The client exposes the Send(alert *xdrgateway.Alert) (err error) and SendMulti(alert *xdrgateway.Alert) (err error) methods
-to push alerts into XDR.
-
-MicroService for rate limited alert ingestion
-
-The second main component is the API type that provides methods to implement a HTTP API to ingest third party alerts into XDR.
+The API type provides methods to implement a HTTP API to ingest third party alerts into XDR.
 Not only provides HTTP handlers for receiving alerts sent using POST but also implements a synchonous ingestion pipeline that
 will enforce Cortex XDR ingestion quotas.
 

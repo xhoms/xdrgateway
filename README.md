@@ -56,10 +56,12 @@ PAN-OS to Cortex XDR alert ingestion Gateway
         "serial": "$serial",
         "sender_sw_version": "$sender_sw_version",
         "subtype": "$subtype",
-        "misc": "$misc",
         "severity": "$severity",
+        "threat_name": "$threat_name", 
         "action": "$action"
 }
+---annex---
+$misc
 
 2021/02/09 11:51:32 nonce set to EEH4PO4BQY42YSFEY2X2F4KYDKFZKJPCB7NGRET7FMX7QNXXGV4NWD5FJQU7P7MS
 2021/02/09 11:51:32 ednpoint set to https://api-myxdr.xdr.us.paloaltonetworks.com/public_api/v1/alerts/insert_parsed_alerts/
@@ -72,7 +74,7 @@ PAN-OS to Cortex XDR alert ingestion Gateway
 You're encouraged to run this container image behind a forward proxy service providing the TLS frontend (i.e. GCP Cloud Run or a NGINX server)
 
 ## Configuring the PAN-OS device
-Check PAN-OS documentation on how to configure a HTTP Server and use it in a Log Forwarding Profile. Only Medium/High/Critical threat alerts should be forwarded to avoid exceeding the ingestion quota.
+Check PAN-OS documentation on how to configure a HTTP Server and use it in a Log Forwarding Profile. Only Medium/High/Critical threat alerts should be forwarded to avoid exceeding the ingestion quota. The payload seen bellow leverages the attribute `$threat_name` that was introduced in PAN-OS 10.1. For earlier versions use `$threatid` instead.
 
 The application provides the endpoint `/dump` that returns the payload that should be used in the PAN-OS HTTP Server.
 
@@ -92,10 +94,12 @@ $ curl 127.0.0.1:8080/dump -H "Authorization: hello"
     "serial": "$serial",
     "sender_sw_version": "$sender_sw_version",
     "subtype": "$subtype",
-    "misc": "$misc",
     "severity": "$severity",
+    "threat_name": "$threat_name",
     "action": "$action"
 }
+---annex---
+$misc
 ```
 
 ## Runtime Statistics
