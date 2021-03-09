@@ -145,15 +145,6 @@ func newAlertPipe(xdrAPI *xdrclient.Client, ops *AlertPipeOps) (pipe *alertPipe)
 		debug:    debug,
 	}
 
-	// t1 bucket receiver
-	go func() {
-		log.Println("starting ticker goroutine")
-		for range pipe.t1Ticker.C {
-			pipe.t1Bucket = bucketSize
-		}
-		return
-	}()
-
 	// t2 alert sender
 	go func() {
 		log.Println("starting sender goroutine")
@@ -172,6 +163,8 @@ func newAlertPipe(xdrAPI *xdrclient.Client, ops *AlertPipeOps) (pipe *alertPipe)
 				close(done)
 				log.Println("ending sender goroutine")
 				return
+			case <-pipe.t1Ticker.C:
+				pipe.t1Bucket = bucketSize
 			case <-pipe.t2Ticker.C:
 			T2:
 				for pipe.t1Bucket > 0 {

@@ -28,8 +28,8 @@ const (
 	ActionBlocked
 )
 
-func severityString(code Severities) (severity string) {
-	switch code {
+func (s Severities) toString() (severity string) {
+	switch s {
 	case SeverityInfo:
 		severity = "Informational"
 	case SeverityLow:
@@ -44,8 +44,8 @@ func severityString(code Severities) (severity string) {
 	return
 }
 
-func actionString(code Actions) (action string) {
-	if code == ActionBlocked {
+func (a Actions) toString() (action string) {
+	if a == ActionBlocked {
 		action = "Blocked"
 	} else {
 		action = "Reported"

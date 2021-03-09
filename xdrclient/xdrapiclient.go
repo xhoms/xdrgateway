@@ -212,8 +212,8 @@ func (a *jsonalert) copy(alert *Alert) {
 	a.AlertName = alert.AlertName
 	a.AlertDescription = alert.AlertDescription
 	a.Timestamp = alert.Timestamp
-	a.Severity = severityString(alert.Severity)
-	a.ActionStatus = actionString(alert.Action)
+	a.Severity = alert.Severity.toString()
+	a.ActionStatus = alert.Action.toString()
 }
 
 type xdrPayload struct {
