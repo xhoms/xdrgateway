@@ -3,9 +3,19 @@ on:
   push:
     branches: ['release']
 jobs:
-  build-and-push-image:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v1
-      - run: CGO_ENABLED=0 go build -ldflags="-X 'main.build=$(date -Iminutes)'" -o build/server.go cmd/server.go
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: CGO_ENABLED=0 go build -ldflags="-X 'main.build=$(date -Iminutes)'" -o build/server cmd/server.go
+      - uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.PAT }}
+      - uses: docker/build-push-action@v2
+        with:
+          context: ${{ github.workspace }}/build
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
