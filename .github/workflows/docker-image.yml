@@ -1,0 +1,11 @@
+name: Create and publish a package
+on:
+  push:
+    branches: ['release']
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v1
+      - run: CGO_ENABLED=0 go build -ldflags="-X 'main.build=$(date -Iminutes)'" -o build/server.go cmd/server.go
