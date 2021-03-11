@@ -1,12 +1,14 @@
 name: Create and publish a package
 on:
-  push:
-    branches: ['release']
+  release:
+    types: [published]
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - uses: actions/setup-go@v2
       - run: CGO_ENABLED=0 go build -ldflags="-X 'main.build=$(date -Iminutes)'" -o build/server cmd/server.go
       - uses: docker/login-action@v1
@@ -18,4 +20,6 @@ jobs:
         with:
           context: ${{ github.workspace }}/build
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.VERSION }}
