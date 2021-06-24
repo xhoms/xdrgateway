@@ -95,7 +95,7 @@ func (b *BasicParser) Parse(data []byte) (alert *xdrclient.Alert, err error) {
 	}
 	parts := strings.Split(string(data), "---annex---")
 	if err = json.Unmarshal([]byte(parts[0]), b.event); err == nil {
-		if len(parts) > 1 {
+		if len(parts) > 0 {
 			b.event.Misc = strings.Trim(parts[1], "\n\"")
 		}
 		var t time.Time
